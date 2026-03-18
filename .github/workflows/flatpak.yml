@@ -1,0 +1,100 @@
+name: Build for Flatpak
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: "tag"
+        required: false
+        default: ""
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "tag"
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  build-flatpak:
+    name: Release Flatpak
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang cmake ninja-build pkg-config libgtk-3-dev \
+            libayatana-appindicator3-dev webkit2gtk-4.1 libasound2-dev \
+            libmpv-dev patchelf flatpak flatpak-builder desktop-file-utils \
+            appstream appstream-util
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+
+      - name: Set and Extract version
+        shell: pwsh
+        run: lib/scripts/build.ps1
+
+      - name: Apply Patch
+        shell: pwsh
+        run: lib/scripts/patch.ps1 Linux
+        continue-on-error: true
+
+      - name: Build Linux bundle
+        run: flutter build linux --release --pub --dart-define-from-file=pili_release.json
+
+      - name: Prepare Flatpak sources
+        run: |
+          rm -rf flatpak-build-src
+          mkdir -p flatpak-build-src
+          cp build/linux/x64/release/bundle/piliplus flatpak-build-src/
+          cp -r build/linux/x64/release/bundle/lib flatpak-build-src/
+          cp -r build/linux/x64/release/bundle/data flatpak-build-src/
+          cp assets/linux/com.example.piliplus.desktop flatpak-build-src/
+          cp packaging/flatpak/com.example.piliplus.metainfo.xml flatpak-build-src/
+          cp assets/images/logo/logo.png flatpak-build-src/piliplus.png
+
+      - name: Install Flatpak runtime
+        run: |
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          sudo flatpak install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+
+      - name: Validate metadata
+        run: |
+          desktop-file-validate assets/linux/com.example.piliplus.desktop
+          appstreamcli validate packaging/flatpak/com.example.piliplus.metainfo.xml
+
+      - name: Build Flatpak repository and bundle
+        run: |
+          rm -rf flatpak-build repo
+          flatpak-builder --force-clean --repo=repo flatpak-build packaging/flatpak/com.example.piliplus.yaml
+          flatpak build-bundle repo "PiliPlus_linux_${{ env.version }}_amd64.flatpak" com.example.piliplus
+
+      - name: Release
+        if: ${{ inputs.tag != '' || github.event.inputs.tag != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag != '' && inputs.tag || github.event.inputs.tag }}
+          name: ${{ inputs.tag != '' && inputs.tag || github.event.inputs.tag }}
+          files: |
+            PiliPlus_linux_*.flatpak
+
+      - name: Upload flatpak artifact
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: Flatpak-release
+          path: PiliPlus_linux_*.flatpak

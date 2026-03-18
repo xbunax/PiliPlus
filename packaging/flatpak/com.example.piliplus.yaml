@@ -1,0 +1,36 @@
+app-id: com.example.piliplus
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: piliplus
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --device=dri
+  - --filesystem=home
+  - --filesystem=xdg-download
+  - --env=LD_LIBRARY_PATH=/app/share/piliplus/lib
+modules:
+  - name: piliplus
+    buildsystem: simple
+    build-commands:
+      - install -d /app/bin /app/share/piliplus
+      - cp -a piliplus /app/share/piliplus/piliplus
+      - cp -a lib /app/share/piliplus/lib
+      - cp -a data /app/share/piliplus/data
+      - install -Dm644 com.example.piliplus.desktop /app/share/applications/com.example.piliplus.desktop
+      - install -Dm644 com.example.piliplus.metainfo.xml /app/share/metainfo/com.example.piliplus.metainfo.xml
+      - install -Dm644 piliplus.png /app/share/icons/hicolor/512x512/apps/piliplus.png
+      - |
+          cat > /app/bin/piliplus <<'SCRIPT'
+          #!/usr/bin/env bash
+          export LD_LIBRARY_PATH="/app/share/piliplus/lib:${LD_LIBRARY_PATH}"
+          exec /app/share/piliplus/piliplus "$@"
+          SCRIPT
+      - chmod +x /app/bin/piliplus
+    sources:
+      - type: dir
+        path: ../../flatpak-build-src

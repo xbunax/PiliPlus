@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.example.piliplus</id>
+  <name>PiliPlus</name>
+  <summary>A third-party Bilibili client developed in Flutter.</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <developer id="com.example">
+    <name>PiliPlus contributors</name>
+  </developer>
+  <launchable type="desktop-id">com.example.piliplus.desktop</launchable>
+  <description>
+    <p>PiliPlus is a Flutter-based third-party Bilibili client with desktop playback support.</p>
+    <p>这个应用是使用 Flutter 开发的 Bilibili 第三方客户端，并提供 Linux 桌面打包。</p>
+  </description>
+  <categories>
+    <category>AudioVideo</category>
+    <category>Video</category>
+    <category>Player</category>
+  </categories>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/bggRGjQaUbCoE/PiliPlus/main/assets/screenshots/main_screen.png</image>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">https://github.com/bggRGjQaUbCoE/PiliPlus</url>
+  <content_rating type="oars-1.1" />
+</component>

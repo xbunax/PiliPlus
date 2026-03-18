@@ -41,6 +41,12 @@ on:
                 default: true
                 type: boolean
 
+            build_flatpak:
+                description: "Build Flatpak"
+                required: false
+                default: true
+                type: boolean
+
             tag:
                 description: "tag"
                 required: false
@@ -169,6 +175,14 @@ jobs:
     linux_x64:
         if: ${{ github.event.inputs.build_linux_x64 == 'true' }}
         uses: ./.github/workflows/linux_x64.yml
+        permissions: write-all
+        with:
+            tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
+
+
+    flatpak:
+        if: ${{ github.event.inputs.build_flatpak == 'true' }}
+        uses: ./.github/workflows/flatpak.yml
         permissions: write-all
         with:
             tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}

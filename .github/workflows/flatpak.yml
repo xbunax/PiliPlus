@@ -66,7 +66,7 @@ jobs:
           cp assets/linux/com.example.piliplus.desktop flatpak-build-src/
           cp packaging/flatpak/com.example.piliplus.metainfo.xml flatpak-build-src/
           cp assets/images/logo/logo.png flatpak-build-src/piliplus.png
-          bash packaging/flatpak/bundle-libmpv.sh flatpak-build-src/lib/system
+          bash packaging/flatpak/bundle-libmpv.sh flatpak-build-src flatpak-build-src/lib/system
 
       - name: Inspect bundled native libraries
         run: |

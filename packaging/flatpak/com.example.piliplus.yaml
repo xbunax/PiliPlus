@@ -12,7 +12,8 @@ finish-args:
   - --device=dri
   - --filesystem=home
   - --filesystem=xdg-download
-  - --env=LD_LIBRARY_PATH=/app/share/piliplus/lib
+  - --env=LD_LIBRARY_PATH=/app/share/piliplus/lib/system:/app/share/piliplus/lib:/app/lib
+  - --env=PILIPLUS_LIBMPV_PATH=/app/share/piliplus/lib/system/libmpv.so.2
 modules:
   - name: piliplus
     buildsystem: simple
@@ -27,7 +28,8 @@ modules:
       - |
           cat > /app/bin/piliplus <<'SCRIPT'
           #!/usr/bin/env bash
-          export LD_LIBRARY_PATH="/app/share/piliplus/lib:${LD_LIBRARY_PATH}"
+          export LD_LIBRARY_PATH="/app/share/piliplus/lib/system:/app/share/piliplus/lib:/app/lib:${LD_LIBRARY_PATH}"
+          export PILIPLUS_LIBMPV_PATH="${PILIPLUS_LIBMPV_PATH:-/app/share/piliplus/lib/system/libmpv.so.2}"
           exec /app/share/piliplus/piliplus "$@"
           SCRIPT
       - chmod +x /app/bin/piliplus

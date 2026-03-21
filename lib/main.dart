@@ -44,6 +44,24 @@ import 'package:window_manager/window_manager.dart' hide calcWindowPosition;
 
 WebViewEnvironment? webViewEnvironment;
 
+String? _resolveLinuxLibmpvPath() {
+  if (!Platform.isLinux) return null;
+  final envPath = Platform.environment['PILIPLUS_LIBMPV_PATH'];
+  final candidates = [
+    if (envPath != null && envPath.isNotEmpty) envPath,
+    '/app/share/piliplus/lib/system/libmpv.so.2',
+    '/app/share/piliplus/lib/system/libmpv.so',
+    '/app/share/piliplus/lib/libmpv.so.2',
+    '/app/share/piliplus/lib/libmpv.so',
+    '/app/lib/libmpv.so.2',
+    '/app/lib/libmpv.so',
+  ];
+  for (final candidate in candidates) {
+    if (File(candidate).existsSync()) return candidate;
+  }
+  return null;
+}
+
 Future<void> _initDownPath() async {
   if (PlatformUtils.isDesktop) {
     final customDownPath = Pref.downloadPath;
@@ -84,7 +102,8 @@ Future<void> _initAppPath() async {
 
 void main() async {
   ScaledWidgetsFlutterBinding.ensureInitialized();
-  MediaKit.ensureInitialized();
+  final libmpvPath = _resolveLinuxLibmpvPath();
+  MediaKit.ensureInitialized(libmpv: libmpvPath);
   await _initAppPath();
   try {
     await GStorage.init();
